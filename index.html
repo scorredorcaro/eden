@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eden Nicole</title>
+    <!-- Tailwind CSS para un diseño espectacular -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animación para el spinner de carga */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+        @-webkit-keyframes spinner {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-pink-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-pink-100">
+        <!-- Encabezado -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-pink-600">Eden Nicole</h1>
+            <p class="text-gray-500 mt-2">Agenda tu cita de belleza en segundos de manera fácil y rápida.</p>
+        </div>
+
+        <!-- Formulario -->
+        <form id="appointmentForm" class="space-y-4">
+            <!-- Nombre -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Tu Nombre</label>
+                <input type="text" id="nombre_cliente" required placeholder="Ej. Camila Pérez"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 outline-none transition">
+            </div>
+
+            <!-- WhatsApp -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Número de WhatsApp</label>
+                <input type="tel" id="telefono" required placeholder="Ej. +573001234567"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 outline-none transition">
+                <span class="text-xs text-gray-400">Debe incluir el código de país (ej. +57 para Colombia).</span>
+            </div>
+
+            <!-- Servicio -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Servicio</label>
+                <select id="servicio" required
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 bg-white rounded-lg focus:ring-pink-500 focus:border-pink-500 outline-none transition">
+                    <option value="" disabled selected>Selecciona un servicio</option>
+                    <option value="manicura">Manicura (1 hora)</option>
+                    <option value="poligel">Poligel (2 horas)</option>
+                    <option value="acrilico">Acrílico (2 horas)</option>
+                    <option value="tradicional">Tradicional (1.5 horas)</option>
+                    <option value="diping">Diping (2 horas)</option>
+                    <option value="semipermanente">Semipermanente (2 horas)</option>
+                    <option value="pedicura">Pedicura (1.5 horas)</option>
+                    <option value="cepillado">Cepillado (50 min)</option>
+                    <option value="alisado">Alisado (1.5 horas)</option>
+                    <option value="alisado y secado">Alisado y Secado (2.5 horas)</option>
+                </select>
+            </div>
+
+            <!-- Fecha y Hora -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Fecha y Hora</label>
+                <input type="datetime-local" id="fecha_hora" required
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 outline-none transition">
+            </div>
+
+            <!-- Botón de Envío con indicador de carga interno -->
+            <button type="submit" id="submitBtn"
+                class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:shadow-pink-200 transition duration-150 ease-in-out flex items-center justify-center gap-2">
+                <span id="btnText">Confirmar y Reservar Cita</span>
+                <div id="btnSpinner" class="hidden loader ease-linear rounded-full border-2 border-t-2 border-gray-200 h-5 w-5"></div>
+            </button>
+
+            <!-- Nota de advertencia sobre el servidor en reposo (Opción A) -->
+            <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
+                <span class="text-sm">💡</span>
+                <p>
+                    <strong>Nota:</strong> Si eres la primera persona en agendar hoy, el proceso puede tardar hasta 1 o 2 minutos mientras se encienden nuestros servidores seguros en la nube. ¡Agradecemos tu paciencia!
+                </p>
+            </div>
+        </form>
+
+        <!-- Mensaje de Estado -->
+        <div id="responseMessage" class="mt-4 p-4 rounded-lg hidden text-center font-medium"></div>
+    </div>
+
+    <!-- Script para conectar con la API de FastAPI -->
+    <script>
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const responseMessage = document.getElementById('responseMessage');
+            
+            // Activar estado de carga en el botón
+            submitBtn.disabled = true;
+            btnText.innerText = "Procesando agendamiento...";
+            btnSpinner.classList.remove('hidden'); // Muestra el círculo giratorio
+
+            responseMessage.classList.add('hidden');
+
+            const data = {
+                nombre_cliente: document.getElementById('nombre_cliente').value,
+                telefono: document.getElementById('telefono').value,
+                servicio: document.getElementById('servicio').value,
+                fecha_hora: document.getElementById('fecha_hora').value
+            };
+
+            try {
+                // REEMPLAZA ESTA URL con tu URL real de Render (ejemplo: 'https://agenda-belleza-backend.onrender.com/agendar-cita/')
+                const response = await fetch('https://agenda-belleza-backend.onrender.com/agendar-cita/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    responseMessage.innerText = "¡Cita agendada con éxito!🎉";
+                    responseMessage.className = "mt-4 p-4 rounded-lg text-center font-medium bg-green-100 text-green-800";
+                    document.getElementById('appointmentForm').reset();
+                } else {
+                    responseMessage.innerText = `Error: ${result.detail || 'No se pudo agendar la cita.'}`;
+                    responseMessage.className = "mt-4 p-4 rounded-lg text-center font-medium bg-red-100 text-red-800";
+                }
+            } catch (error) {
+                responseMessage.innerText = "Error de conexión con el servidor. Asegúrate de que el servidor en la nube esté activo.";
+                responseMessage.className = "mt-4 p-4 rounded-lg text-center font-medium bg-red-100 text-red-800";
+            } finally {
+                // Reestablecer estado normal del botón
+                submitBtn.disabled = false;
+                btnText.innerText = "Confirmar y Reservar Cita";
+                btnSpinner.classList.add('hidden'); // Oculta el círculo giratorio
+                responseMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
