@@ -2,4 +2,4 @@ fastapi
 uvicorn
 sqlalchemy
 twilio
-pydantic
+pydanticpython-dotenv

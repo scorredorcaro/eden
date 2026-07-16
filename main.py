@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 import uvicorn
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Depends
@@ -45,11 +46,13 @@ SERVICIOS_DISPONIBLES = {
     "alisado y secado": {"nombre": "Alisado y Secado", "duracion": 150}
 }
 
+# Forzamos la carga de las variables de entorno desde el sistema o archivo .env
+load_dotenv()
+
 # =====================================================================
 # 3. CONFIGURACIÓN DE TWILIO (100% LIMPIA Y SEGURA PARA GITHUB)
 # =====================================================================
-# Leemos estrictamente de las variables de entorno de la nube.
-# Si el servidor está en local (sin variables), usará strings vacíos por defecto.
+
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
 TWILIO_WHATSAPP_NUMBER = os.environ.get("TWILIO_WHATSAPP_NUMBER", "")
